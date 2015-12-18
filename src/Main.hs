@@ -7,6 +7,7 @@ import Foreign
 import Data.Typeable
 import Data.Char
 
+import Control.Concurrent
 import System.Environment
 import System.Exit
 import System.Random
@@ -24,6 +25,7 @@ main = withInit [InitVideo] $
        enableUnicode True
        let initialGameState = (0, 0)
        display initialGameState
+       enableKeyRepeat 1 1
        loop initialGameState
 
 display :: GameState -> IO ()
@@ -38,7 +40,7 @@ display (x, y)
 
 loop :: GameState -> IO GameState
 loop (x, y) = do
-    event <- waitEvent
+    event <- pollEvent
     newGameState <- case event of
         Quit -> exitWith ExitSuccess
         KeyDown (Keysym _ _ 'q') -> exitWith ExitSuccess
@@ -48,6 +50,8 @@ loop (x, y) = do
         KeyDown (Keysym _ _ 'l') -> return $ move (x, y) (10, 0)
         _ -> return (x, y)
     display newGameState
+    newGameState <- return $ move newGameState (0, 1)
+    threadDelay $ floor $ 1.0 / 5.0
     loop newGameState
 
 isWithinScreen :: Position -> Bool
