@@ -12,9 +12,13 @@ import System.Environment
 import System.Exit
 import System.Random
 
-type GameState = (Int, Int)
 type MoveVector = (Int, Int)
 type Position = (Int, Int)
+
+data GameState = GameState
+    { currentPosition :: Position
+    , obstacles :: [Rect]
+    }
 
 width = 640
 height = 480
@@ -23,25 +27,26 @@ main = withInit [InitVideo] $
     do screen <- setVideoMode 640 480 16 [SWSurface]
        setCaption "Test" ""
        enableUnicode True
-       let initialGameState = (0, 0)
+       let initialGameState = GameState (0, 0) [Rect 310 410 150 70]
        display initialGameState
        enableKeyRepeat 1 1
        loop initialGameState
 
 display :: GameState -> IO ()
-display (x, y)
-    = do screen <- getVideoSurface
+display s@(GameState { currentPosition = (x, y) }) = do
+         screen <- getVideoSurface
          let format = surfaceGetPixelFormat screen
          red <- mapRGB format 0xFF 0 0
          green <- mapRGB format 0 0xFF 0
          fillRect screen Nothing green
          fillRect screen (Just (Rect x y 10 10)) red
+         mapM_ (\x -> fillRect screen (Just x) red) $ obstacles s
          SDL.flip screen
 
 loop :: GameState -> IO GameState
-loop (x, y) = do
+loop s@(GameState { currentPosition = (x, y) }) = do
     event <- pollEvent
-    newGameState <- case event of
+    newPosition <- case event of
         Quit -> exitWith ExitSuccess
         KeyDown (Keysym _ _ 'q') -> exitWith ExitSuccess
         KeyDown (Keysym _ _ 'h') -> return $ move (x, y) (-10, 0)
@@ -49,12 +54,13 @@ loop (x, y) = do
         KeyDown (Keysym _ _ 'k') -> return $ move (x, y) (0, -10)
         KeyDown (Keysym _ _ 'l') -> return $ move (x, y) (10, 0)
         _ -> return (x, y)
+    newPosition <- return $ gravity newPosition
+    let newGameState = s { currentPosition = newPosition }
     display newGameState
-    newGameState <- return $ gravity newGameState
     threadDelay $ floor $ 1.0 / 5.0
     loop newGameState
 
-gravity :: GameState -> GameState
+gravity :: Position -> Position
 gravity s = move s (0, 1)
 
 isWithinScreen :: Position -> Bool
