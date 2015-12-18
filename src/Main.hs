@@ -12,6 +12,8 @@ import System.Exit
 import System.Random
 
 type GameState = (Int, Int)
+type MoveVector = (Int, Int)
+type Position = (Int, Int)
 
 width = 640
 height = 480
@@ -40,10 +42,17 @@ loop (x, y) = do
     newGameState <- case event of
         Quit -> exitWith ExitSuccess
         KeyDown (Keysym _ _ 'q') -> exitWith ExitSuccess
-        KeyDown (Keysym _ _ 'h') -> return (x - 10, y)
-        KeyDown (Keysym _ _ 'j') -> return (x, y + 10)
-        KeyDown (Keysym _ _ 'k') -> return (x, y - 10)
-        KeyDown (Keysym _ _ 'l') -> return (x + 10, y)
+        KeyDown (Keysym _ _ 'h') -> return $ move (x, y) (-10, 0)
+        KeyDown (Keysym _ _ 'j') -> return $ move (x, y) (0, 10)
+        KeyDown (Keysym _ _ 'k') -> return $ move (x, y) (0, -10)
+        KeyDown (Keysym _ _ 'l') -> return $ move (x, y) (10, 0)
         _ -> return (x, y)
     display newGameState
     loop newGameState
+
+isWithinScreen :: Position -> Bool
+isWithinScreen (x, y) = x <= 640 && x >= 0 && y <= 480 && y >= 0
+
+move :: Position -> MoveVector -> Position
+move (x, y) (x', y') = let newPosition = (x + x', y + y')
+                        in if isWithinScreen newPosition then newPosition else (x, y)
