@@ -51,7 +51,7 @@ loop (x, y) = do
     loop newGameState
 
 isWithinScreen :: Position -> Bool
-isWithinScreen (x, y) = x <= 640 && x >= 0 && y <= 480 && y >= 0
+isWithinScreen (x, y) = x < 640 && x >= 0 && y < 480 && y >= 0
 
 move :: Position -> MoveVector -> Position
 move (x, y) (x', y') = let newPosition = (x + x', y + y')
