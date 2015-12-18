@@ -50,9 +50,12 @@ loop (x, y) = do
         KeyDown (Keysym _ _ 'l') -> return $ move (x, y) (10, 0)
         _ -> return (x, y)
     display newGameState
-    newGameState <- return $ move newGameState (0, 1)
+    newGameState <- return $ gravity newGameState
     threadDelay $ floor $ 1.0 / 5.0
     loop newGameState
+
+gravity :: GameState -> GameState
+gravity s = move s (0, 1)
 
 isWithinScreen :: Position -> Bool
 isWithinScreen (x, y) = x < 640 && x >= 0 && y < 480 && y >= 0
