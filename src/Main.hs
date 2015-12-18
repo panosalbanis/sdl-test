@@ -40,8 +40,10 @@ loop (x, y) = do
     newGameState <- case event of
         Quit -> exitWith ExitSuccess
         KeyDown (Keysym _ _ 'q') -> exitWith ExitSuccess
+        KeyDown (Keysym _ _ 'h') -> return (x - 10, y)
         KeyDown (Keysym _ _ 'j') -> return (x, y + 10)
         KeyDown (Keysym _ _ 'k') -> return (x, y - 10)
+        KeyDown (Keysym _ _ 'l') -> return (x + 10, y)
         _ -> return (x, y)
     display newGameState
     loop newGameState
