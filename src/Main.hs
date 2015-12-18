@@ -35,7 +35,8 @@ display (x, y)
          SDL.flip screen
 
 loop :: GameState -> IO GameState
-loop (x, y) = do event <- waitEvent
+loop (x, y) = do
+    event <- waitEvent
     newGameState <- case event of
         Quit -> exitWith ExitSuccess
         KeyDown (Keysym _ _ 'q') -> exitWith ExitSuccess
